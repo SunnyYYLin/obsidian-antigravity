@@ -145,6 +145,7 @@ export class VaultTaskRunner {
           executable: executablePath,
           args,
           cwd: vaultPath,
+          env: AgyProcess.formatProxyEnv(settings.proxyUrl),
         });
 
         const runRecord: ActiveTaskRun = {

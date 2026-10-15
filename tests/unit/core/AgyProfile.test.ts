@@ -10,6 +10,7 @@ import {
   ensureVaultProject,
   getHubInstanceFilePath,
   loadHubInstanceMetadata,
+  pathToFolderUri,
   removeHubInstanceMetadata,
   saveHubInstanceMetadata,
 } from '../../../src/core/AgyProfile';
@@ -146,7 +147,7 @@ describe('AgyProfile', () => {
       const data = JSON.parse(fs.readFileSync(projectFile, 'utf8'));
       expect(data.id).toBe(projectId);
       expect(data.name).toBe('ObsidianVault');
-      expect(data.projectResources.resources[0].gitFolder.folderUri).toBe(`file://${vaultPath}`);
+      expect(data.projectResources.resources[0].gitFolder.folderUri).toBe(pathToFolderUri(vaultPath));
     });
 
     it('generates distinct project IDs for different vault paths with the same folder name', () => {
@@ -207,7 +208,7 @@ describe('AgyProfile', () => {
         { permission: 'command(obsidian *)' },
       ]);
       expect(updated.v2Migrated).toBe(true);
-      expect(updated.projectResources.resources[0].gitFolder.folderUri).toBe(`file://${vaultPath}`);
+      expect(updated.projectResources.resources[0].gitFolder.folderUri).toBe(pathToFolderUri(vaultPath));
     });
   });
 
@@ -353,6 +354,21 @@ describe('AgyProfile', () => {
       fs.writeFileSync(filePath, 'not json');
 
       expect(loadHubInstanceMetadata('test-profile', tmpDir)).toBeNull();
+    });
+  });
+
+  describe('pathToFolderUri', () => {
+    it('formats paths to valid file URIs with forward slashes', () => {
+      const uri = pathToFolderUri('/home/user/vault');
+      expect(uri).toMatch(/^file:\/\/\//);
+      expect(uri).not.toContain('\\');
+    });
+
+    it('formats Windows drive paths with file:/// and forward slashes', () => {
+      if (process.platform === 'win32') {
+        const testPath = 'C:\\Users\\Sunny\\Vault';
+        expect(pathToFolderUri(testPath)).toBe('file:///C:/Users/Sunny/Vault');
+      }
     });
   });
 });

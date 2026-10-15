@@ -35,6 +35,34 @@ export interface ExecOperations {
 }
 
 export class AgyProcess {
+  /**
+   * Formats proxy environment variables based on the given proxy URL.
+   * Sets HTTP_PROXY, HTTPS_PROXY, ALL_PROXY, and their lowercase variants.
+   * Always includes NO_PROXY/no_proxy to bypass local addresses (e.g. hub daemon).
+   */
+  static formatProxyEnv(proxyUrl?: string, baseEnv: NodeJS.ProcessEnv = process.env): Record<string, string> {
+    const result: Record<string, string> = {};
+    const trimmed = proxyUrl?.trim();
+    if (trimmed) {
+      const normalized = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(trimmed) ? trimmed : `http://${trimmed}`;
+      result.HTTP_PROXY = normalized;
+      result.HTTPS_PROXY = normalized;
+      result.ALL_PROXY = normalized;
+      result.http_proxy = normalized;
+      result.https_proxy = normalized;
+      result.all_proxy = normalized;
+
+      const noProxyVal = baseEnv.NO_PROXY || baseEnv.no_proxy || '127.0.0.1,localhost';
+      const noProxyParts = noProxyVal.split(',').map((s) => s.trim()).filter(Boolean);
+      if (!noProxyParts.includes('127.0.0.1')) noProxyParts.push('127.0.0.1');
+      if (!noProxyParts.includes('localhost')) noProxyParts.push('localhost');
+      const finalNoProxy = noProxyParts.join(',');
+      result.NO_PROXY = finalNoProxy;
+      result.no_proxy = finalNoProxy;
+    }
+    return result;
+  }
+
   static getEnrichedEnv(additionalEnv: Record<string, string> = {}): NodeJS.ProcessEnv {
     const env = { ...process.env, ...additionalEnv };
     const home = os.homedir();

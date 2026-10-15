@@ -60,6 +60,7 @@ export default class AntigravityPlugin extends Plugin {
           () => this.settings.hubProfile || 'antigravity-obsidian',
           () => this.settings.defaultAgent,
           () => this.isHubUnrestrictedAllowed(),
+          () => this.settings.proxyUrl,
         ),
     );
 
@@ -201,6 +202,7 @@ export default class AntigravityPlugin extends Plugin {
             this.settings.hubProfile || 'antigravity-obsidian',
             this.settings.defaultAgent,
             this.isHubUnrestrictedAllowed(),
+            this.settings.proxyUrl,
           )
           .catch((err: unknown) => {
             // Auto-start runs in the background, but failing silently leaves

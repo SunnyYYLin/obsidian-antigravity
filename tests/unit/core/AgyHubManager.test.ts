@@ -214,6 +214,8 @@ describe('AgyHubManager', () => {
 
     it('shows a notice when profile authentication is missing on startHub', async () => {
       const childProcess = require('child_process');
+      const agyProfile = require('../../../src/core/AgyProfile');
+      const authSpy = jest.spyOn(agyProfile, 'ensureProfileInitialized').mockReturnValue(false);
       const spawnSpy = jest.spyOn(childProcess, 'spawn').mockReturnValue({
         on: jest.fn(),
         kill: jest.fn(),
@@ -227,6 +229,7 @@ describe('AgyHubManager', () => {
 
       expect(Notice).toHaveBeenCalledWith(expect.stringContaining('Antigravity'));
       spawnSpy.mockRestore();
+      authSpy.mockRestore();
     });
 
     it('coalesces concurrent startHub calls with the same profile into a single spawn', async () => {
@@ -286,6 +289,52 @@ describe('AgyHubManager', () => {
       expect(urlA).toContain('41001');
       expect(urlB).toContain('41002');
       expect(spawnedProfiles).toEqual(['--app_data_dir=profile-A', '--app_data_dir=profile-B']);
+
+      spawnSpy.mockRestore();
+    });
+
+    it('passes proxy environment variables when proxyUrl is provided', async () => {
+      const childProcess = require('child_process');
+      let capturedEnv: Record<string, string> | undefined;
+      const spawnSpy = jest.spyOn(childProcess, 'spawn').mockImplementation((_exe: any, _args: any, options: any) => {
+        capturedEnv = options.env;
+        return {
+          on: jest.fn(),
+          kill: jest.fn(),
+          killed: false,
+          exitCode: null,
+        } as any;
+      });
+      jest.spyOn(hubManager as any, 'waitForPort').mockResolvedValue(undefined);
+
+      await hubManager.startHub('/bin/agy', '/test/vault', 42500, 'proxy-profile', undefined, false, 'http://127.0.0.1:7897');
+
+      expect(capturedEnv).toBeDefined();
+      expect(capturedEnv?.HTTP_PROXY).toBe('http://127.0.0.1:7897');
+      expect(capturedEnv?.NO_PROXY).toContain('127.0.0.1');
+      expect(hubManager.getProxyUrl()).toBe('http://127.0.0.1:7897');
+
+      spawnSpy.mockRestore();
+    });
+
+    it('restarts hub when proxyUrl changes', async () => {
+      const childProcess = require('child_process');
+      const spawnSpy = jest.spyOn(childProcess, 'spawn').mockReturnValue({
+        on: jest.fn(),
+        kill: jest.fn(),
+        killed: false,
+        exitCode: null,
+      } as any);
+      const stopSpy = jest.spyOn(hubManager, 'stopHub');
+      jest.spyOn(hubManager as any, 'waitForPort').mockResolvedValue(undefined);
+
+      await hubManager.startHub('/bin/agy', '/test/vault', 42501, 'restart-profile', undefined, false, 'http://127.0.0.1:7890');
+      expect(hubManager.getProxyUrl()).toBe('http://127.0.0.1:7890');
+
+      // Call startHub with different proxy
+      await hubManager.startHub('/bin/agy', '/test/vault', 42502, 'restart-profile', undefined, false, 'http://127.0.0.1:7897');
+      expect(stopSpy).toHaveBeenCalled();
+      expect(hubManager.getProxyUrl()).toBe('http://127.0.0.1:7897');
 
       spawnSpy.mockRestore();
     });

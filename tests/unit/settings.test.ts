@@ -50,6 +50,12 @@ describe('validateSettings', () => {
     expect(validateSettings({ hubProfile: 'valid-profile_2' }).hubProfile).toBe('valid-profile_2');
   });
 
+  it('validates proxyUrl and trims whitespace', () => {
+    expect(validateSettings({ proxyUrl: '  http://127.0.0.1:7897  ' }).proxyUrl).toBe('http://127.0.0.1:7897');
+    expect(validateSettings({ proxyUrl: 12345 }).proxyUrl).toBe(DEFAULT_SETTINGS.proxyUrl);
+    expect(validateSettings({}).proxyUrl).toBe('');
+  });
+
   it('validates boolean security flags', () => {
     expect(validateSettings({ allowUnrestrictedTasks: 'true' }).allowUnrestrictedTasks).toBe(false);
     expect(validateSettings({ allowUnrestrictedTasks: true }).allowUnrestrictedTasks).toBe(true);

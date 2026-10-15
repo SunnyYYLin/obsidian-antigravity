@@ -23,6 +23,40 @@ describe('AgyProcess', () => {
       expect(env.CUSTOM_VAR).toBe('hello-antigravity');
     });
   });
+
+  describe('formatProxyEnv', () => {
+    it('returns empty object when proxyUrl is empty or whitespace', () => {
+      expect(AgyProcess.formatProxyEnv('')).toEqual({});
+      expect(AgyProcess.formatProxyEnv('   ')).toEqual({});
+      expect(AgyProcess.formatProxyEnv(undefined)).toEqual({});
+    });
+
+    it('defaults protocol to http:// if missing', () => {
+      const env = AgyProcess.formatProxyEnv('127.0.0.1:7897', {});
+      expect(env.HTTP_PROXY).toBe('http://127.0.0.1:7897');
+      expect(env.HTTPS_PROXY).toBe('http://127.0.0.1:7897');
+      expect(env.ALL_PROXY).toBe('http://127.0.0.1:7897');
+      expect(env.http_proxy).toBe('http://127.0.0.1:7897');
+      expect(env.https_proxy).toBe('http://127.0.0.1:7897');
+      expect(env.all_proxy).toBe('http://127.0.0.1:7897');
+      expect(env.NO_PROXY).toBe('127.0.0.1,localhost');
+      expect(env.no_proxy).toBe('127.0.0.1,localhost');
+    });
+
+    it('preserves specified protocols like socks5 and https', () => {
+      const env = AgyProcess.formatProxyEnv('socks5://127.0.0.1:1080', {});
+      expect(env.ALL_PROXY).toBe('socks5://127.0.0.1:1080');
+      expect(env.HTTP_PROXY).toBe('socks5://127.0.0.1:1080');
+    });
+
+    it('preserves existing NO_PROXY domains while ensuring localhost and 127.0.0.1 are present', () => {
+      const env = AgyProcess.formatProxyEnv('http://proxy.example.com:8080', {
+        NO_PROXY: 'internal.corp,myvault.local',
+      });
+      expect(env.NO_PROXY).toBe('internal.corp,myvault.local,127.0.0.1,localhost');
+      expect(env.no_proxy).toBe('internal.corp,myvault.local,127.0.0.1,localhost');
+    });
+  });
 });
 
 describe('AgyProcess.spawnProcess stdio defaults', () => {
