@@ -1,5 +1,6 @@
 export interface AntigravityPluginSettings {
   cliPath: string;
+  proxyUrl: string;
   model: string;
   hubPort: number;
   autoStartHub: boolean;
@@ -20,6 +21,7 @@ export interface AntigravityPluginSettings {
 
 export const DEFAULT_SETTINGS: AntigravityPluginSettings = {
   cliPath: '',
+  proxyUrl: '',
   model: 'gemini-3.8-flash-high',
   hubPort: 0,
   autoStartHub: false,
@@ -43,6 +45,10 @@ export function validateSettings(raw: unknown): AntigravityPluginSettings {
 
   if (typeof data.cliPath === 'string') {
     result.cliPath = data.cliPath.trim();
+  }
+
+  if (typeof data.proxyUrl === 'string') {
+    result.proxyUrl = data.proxyUrl.trim();
   }
 
   if (typeof data.model === 'string' && data.model.trim().length > 0) {

@@ -142,7 +142,7 @@ Adhere to the following conventions:
     const resolved = path.resolve(normalizedVault, trimmed);
 
     if (resolved === normalizedVault || resolved.startsWith(normalizedVault + path.sep)) {
-      return path.relative(normalizedVault, resolved);
+      return path.relative(normalizedVault, resolved).replace(/\\/g, '/');
     }
 
     return path.basename(trimmed);

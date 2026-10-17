@@ -18,6 +18,7 @@ export class HubView extends ItemView {
     private getProfile: () => string,
     private getDefaultAgent?: () => string,
     private getAllowUnrestricted?: () => boolean,
+    private getProxyUrl?: () => string,
   ) {
     super(leaf);
   }
@@ -92,13 +93,15 @@ export class HubView extends ItemView {
 
     const allowUnrestricted = this.getAllowUnrestricted ? this.getAllowUnrestricted() : false;
     const profile = this.getProfile();
+    const proxyUrl = this.getProxyUrl ? this.getProxyUrl() : '';
 
     if (
       this.hubManager.isRunning() &&
       this.hubManager.getHubUrl() &&
       this.hubManager.getCurrentProfile() === profile &&
       this.hubManager.getVaultPath() === vaultPath &&
-      this.hubManager.getDangerouslySkipPermissions() === allowUnrestricted
+      this.hubManager.getDangerouslySkipPermissions() === allowUnrestricted &&
+      this.hubManager.getProxyUrl() === (proxyUrl.trim() || '')
     ) {
       this.renderIframe(this.getThemedHubUrl());
       return;
@@ -114,6 +117,7 @@ export class HubView extends ItemView {
         profile,
         this.getDefaultAgent ? this.getDefaultAgent() : undefined,
         allowUnrestricted,
+        proxyUrl,
       );
       this.renderIframe(this.getThemedHubUrl());
     } catch (err) {

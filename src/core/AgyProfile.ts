@@ -122,6 +122,15 @@ migrations:  {
   }
 }
 
+/**
+ * Converts a filesystem path into a valid RFC 8089 file URI (file:///...).
+ * Crucial on Windows: prevents drive letters (e.g. C:) from being parsed as URL hosts.
+ */
+export function pathToFolderUri(filePath: string): string {
+  const resolved = path.resolve(filePath).replace(/\\/g, '/');
+  return resolved.startsWith('/') ? `file://${resolved}` : `file:///${resolved}`;
+}
+
 export function ensureVaultProject(vaultPath: string, homeDir: string = os.homedir()): string {
   const normalizedPath = path.resolve(vaultPath);
   const projectName = path.basename(normalizedPath) || 'obsidian';
@@ -160,7 +169,7 @@ export function ensureVaultProject(vaultPath: string, homeDir: string = os.homed
         resources: [
           {
             gitFolder: {
-              folderUri: `file://${vaultPath}`,
+              folderUri: pathToFolderUri(vaultPath),
             },
           },
         ],

@@ -19,6 +19,7 @@ interface InFlightHubStart {
   profile: string;
   vaultPath: string;
   dangerouslySkipPermissions: boolean;
+  proxyUrl: string;
   promise: Promise<string>;
 }
 
@@ -44,6 +45,7 @@ export class AgyHubManager {
   private currentProfile: string | null = null;
   private currentProjectId: string | null = null;
   private currentDangerouslySkipPermissions: boolean = false;
+  private currentProxyUrl: string = '';
   private inFlightStart: InFlightHubStart | null = null;
   private startMutex: Promise<void> = Promise.resolve();
   private killEscalation: KillEscalation | null = null;
@@ -58,8 +60,10 @@ export class AgyHubManager {
     profile: string = 'antigravity-obsidian',
     defaultAgent?: string,
     dangerouslySkipPermissions: boolean = false,
+    proxyUrl?: string,
   ): Promise<string> {
     const safeProfile = sanitizeProfile(profile);
+    const safeProxyUrl = proxyUrl?.trim() || '';
 
     // 1. Fast path: if hub is already running for the exact same profile, vault & permission mode
     if (
@@ -67,7 +71,8 @@ export class AgyHubManager {
       this.port &&
       this.currentProfile === safeProfile &&
       this.vaultPath === vaultPath &&
-      this.currentDangerouslySkipPermissions === dangerouslySkipPermissions
+      this.currentDangerouslySkipPermissions === dangerouslySkipPermissions &&
+      this.currentProxyUrl === safeProxyUrl
     ) {
       return this.getHubUrl();
     }
@@ -77,7 +82,8 @@ export class AgyHubManager {
       this.inFlightStart &&
       this.inFlightStart.profile === safeProfile &&
       this.inFlightStart.vaultPath === vaultPath &&
-      this.inFlightStart.dangerouslySkipPermissions === dangerouslySkipPermissions
+      this.inFlightStart.dangerouslySkipPermissions === dangerouslySkipPermissions &&
+      this.inFlightStart.proxyUrl === safeProxyUrl
     ) {
       return this.inFlightStart.promise;
     }
@@ -90,17 +96,19 @@ export class AgyHubManager {
         this.port &&
         this.currentProfile === safeProfile &&
         this.vaultPath === vaultPath &&
-        this.currentDangerouslySkipPermissions === dangerouslySkipPermissions
+        this.currentDangerouslySkipPermissions === dangerouslySkipPermissions &&
+        this.currentProxyUrl === safeProxyUrl
       ) {
         return this.getHubUrl();
       }
 
-      // If a hub is running with a different profile, vault, or permission mode, stop it now
+      // If a hub is running with a different profile, vault, permission mode, or proxy, stop it now
       if (
         this.hubProcess &&
         (this.currentProfile !== safeProfile ||
           this.vaultPath !== vaultPath ||
-          this.currentDangerouslySkipPermissions !== dangerouslySkipPermissions)
+          this.currentDangerouslySkipPermissions !== dangerouslySkipPermissions ||
+          this.currentProxyUrl !== safeProxyUrl)
       ) {
         this.stopHub();
       }
@@ -137,8 +145,10 @@ export class AgyHubManager {
         args.push(`--agent=${defaultAgent}`);
       }
 
+      const proxyEnv = AgyProcess.formatProxyEnv(safeProxyUrl);
       const env: Record<string, string> = {
         AGY_ENABLE_HUB: '1',
+        ...proxyEnv,
       };
 
       const enrichedEnv = AgyProcess.getEnrichedEnv(env);
@@ -185,6 +195,7 @@ export class AgyHubManager {
           this.currentProjectId = null;
           this.vaultPath = null;
           this.currentDangerouslySkipPermissions = false;
+          this.currentProxyUrl = '';
         }
       });
 
@@ -214,6 +225,7 @@ export class AgyHubManager {
       this.currentProjectId = projectId;
       this.vaultPath = vaultPath;
       this.currentDangerouslySkipPermissions = dangerouslySkipPermissions;
+      this.currentProxyUrl = safeProxyUrl;
 
       return this.buildHubUrl(port, projectId);
     };
@@ -232,6 +244,7 @@ export class AgyHubManager {
       profile: safeProfile,
       vaultPath,
       dangerouslySkipPermissions,
+      proxyUrl: safeProxyUrl,
       promise: startPromise,
     };
 
@@ -278,6 +291,10 @@ export class AgyHubManager {
     return this.currentDangerouslySkipPermissions;
   }
 
+  getProxyUrl(): string {
+    return this.currentProxyUrl;
+  }
+
   /**
    * Discovers and cleans up stale/orphaned hub processes for this profile from previous sessions.
    */
@@ -315,6 +332,7 @@ export class AgyHubManager {
       this.currentProjectId = null;
       this.vaultPath = null;
       this.currentDangerouslySkipPermissions = false;
+      this.currentProxyUrl = '';
     }
   }
 

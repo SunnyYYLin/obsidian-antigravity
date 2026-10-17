@@ -1,3 +1,4 @@
+import * as path from 'path';
 import { VaultContext } from '../../../src/core/VaultContext';
 
 describe('VaultContext', () => {
@@ -148,17 +149,17 @@ describe('VaultContext', () => {
   describe('resolveSafeRulesPath', () => {
     it('resolves safe relative rules path inside vault', () => {
       const resolved = vaultContext.resolveSafeRulesPath('AGENTS.md');
-      expect(resolved).toBe('/home/user/vault/AGENTS.md');
+      expect(resolved).toBe(path.resolve('/home/user/vault', 'AGENTS.md'));
     });
 
     it('resolves safe nested rules path inside vault', () => {
       const resolved = vaultContext.resolveSafeRulesPath('.rules/AGENTS.md');
-      expect(resolved).toBe('/home/user/vault/.rules/AGENTS.md');
+      expect(resolved).toBe(path.resolve('/home/user/vault', '.rules/AGENTS.md'));
     });
 
     it('detects path traversal and falls back to default AGENTS.md with notice', () => {
       const resolved = vaultContext.resolveSafeRulesPath('../../Documents/notes.md');
-      expect(resolved).toBe('/home/user/vault/AGENTS.md');
+      expect(resolved).toBe(path.resolve('/home/user/vault', 'AGENTS.md'));
     });
 
     it('returns null for empty rules path', () => {

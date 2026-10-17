@@ -70,6 +70,15 @@ export class AntigravitySettingTab extends PluginSettingTab {
         },
       },
       {
+        name: t('settings.proxyUrlName'),
+        desc: t('settings.proxyUrlDesc'),
+        control: {
+          type: 'text',
+          key: 'proxyUrl',
+          placeholder: t('settings.proxyUrlPlaceholder'),
+        },
+      },
+      {
         name: t('settings.modelName'),
         desc: t('settings.modelDesc'),
         control: {
