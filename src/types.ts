@@ -52,7 +52,13 @@ export function validateSettings(raw: unknown): AntigravityPluginSettings {
   }
 
   if (typeof data.model === 'string' && data.model.trim().length > 0) {
-    result.model = data.model.trim();
+    const trimmedModel = data.model.trim();
+    // Migrate legacy/sunsetted models from older Antigravity CLI versions
+    if (/^gemini-(3\.[167])(-flash|-pro)?(-high|-medium|-low)?$/.test(trimmedModel)) {
+      result.model = DEFAULT_SETTINGS.model;
+    } else {
+      result.model = trimmedModel;
+    }
   }
 
   if (

@@ -81,18 +81,26 @@ describe('validateSettings', () => {
 
   it('preserves valid custom fields while falling back on invalid fields', () => {
     const raw = {
-      model: 'gemini-3.1-pro-high',
+      model: 'claude-sonnet-4-6',
       hubPort: 'not-a-number',
       cliPath: '  /usr/local/bin/agy  ',
       customRulesPath: 'rules/AGENTS.md',
     };
 
     const validated = validateSettings(raw);
-    expect(validated.model).toBe('gemini-3.1-pro-high');
+    expect(validated.model).toBe('claude-sonnet-4-6');
     expect(validated.hubPort).toBe(0);
     expect(validated.cliPath).toBe('/usr/local/bin/agy');
     expect(validated.customRulesPath).toBe('rules/AGENTS.md');
     expect(validated.enableVaultRules).toBe(true);
+  });
+
+  it('migrates legacy sunsetted models to default model', () => {
+    expect(validateSettings({ model: 'gemini-3.7-flash-high' }).model).toBe(DEFAULT_SETTINGS.model);
+    expect(validateSettings({ model: 'gemini-3.6-flash-medium' }).model).toBe(DEFAULT_SETTINGS.model);
+    expect(validateSettings({ model: 'gemini-3.1-pro-high' }).model).toBe(DEFAULT_SETTINGS.model);
+    expect(validateSettings({ model: 'gemini-3.8-flash-high' }).model).toBe('gemini-3.8-flash-high');
+    expect(validateSettings({ model: 'claude-sonnet-4-6' }).model).toBe('claude-sonnet-4-6');
   });
 });
 

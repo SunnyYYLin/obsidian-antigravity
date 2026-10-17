@@ -1,6 +1,7 @@
 import { ChildProcess } from 'child_process';
 import { Notice } from 'obsidian';
 import { AgyProcess } from './AgyProcess';
+import { ensureDefaultProjectId, ensureProfileInitialized, ensureVaultProject, sanitizeProfile } from './AgyProfile';
 import { VaultContext } from './VaultContext';
 import { t } from '../i18n';
 import { AntigravityPluginSettings, StreamEvent, TaskExecutionOptions } from '../types';
@@ -95,11 +96,20 @@ export class VaultTaskRunner {
 
     const model = options.model || settings.model || 'gemini-3.8-flash-high';
 
+    const profile = sanitizeProfile(settings.hubProfile || 'antigravity-obsidian');
+    const projectId = ensureVaultProject(vaultPath);
+    ensureDefaultProjectId(profile, projectId);
+    const isAuthed = ensureProfileInitialized(profile, vaultPath);
+    if (!isAuthed) {
+      new Notice(t('errors.notAuthenticated'));
+    }
+
     const args: string[] = [
       '--print',
       formattedPrompt,
       '--output-format',
       'stream-json',
+      `--project=${projectId}`,
       '--add-dir',
       vaultPath,
     ];
@@ -110,7 +120,6 @@ export class VaultTaskRunner {
       args.push('--dangerously-skip-permissions');
     }
 
-    const profile = settings.hubProfile || 'antigravity-obsidian';
     args.push(`--app_data_dir=${profile}`);
 
     if (model) {

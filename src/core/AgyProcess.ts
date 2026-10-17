@@ -70,6 +70,8 @@ export class AgyProcess {
 
     const extraPaths = [
       path.join(home, '.local', 'bin'),
+      path.join(home, '.local', 'share', 'mise', 'shims'),
+      path.join(home, '.asdf', 'shims'),
       '/usr/local/bin',
       '/usr/bin',
       '/bin',

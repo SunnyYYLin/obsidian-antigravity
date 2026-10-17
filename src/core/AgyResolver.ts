@@ -55,6 +55,9 @@ export class AgyResolver {
 
     const candidatePaths: string[] = [
       path.join(home, '.local', 'bin', binaryName),
+      path.join(home, '.local', 'share', 'mise', 'shims', binaryName),
+      path.join(home, '.local', 'share', 'mise', 'installs', 'agy', 'latest', binaryName),
+      path.join(home, '.asdf', 'shims', binaryName),
       path.join('/usr', 'local', 'bin', binaryName),
       path.join('/usr', 'bin', binaryName),
       path.join('/opt', 'homebrew', 'bin', binaryName),

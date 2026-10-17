@@ -79,9 +79,11 @@ Found under **Settings → Antigravity**.
 
 **Language** — Interface language. Options are auto (follows Obsidian), English, Simplified Chinese, and Traditional Chinese.
 
-**Antigravity binary path** — Location of the `agy` executable. When empty, the plugin searches `~/.local/bin`, `/usr/local/bin`, `/usr/bin`, and your `PATH`. The **Verify binary** button runs `agy --version` to confirm the plugin can execute it.
+**Antigravity binary path** — Location of the `agy` executable. When empty, the plugin searches `~/.local/bin`, mise/asdf shims, `/usr/local/bin`, `/usr/bin`, and your `PATH`. The **Verify binary** button runs `agy --version` to confirm the plugin can execute it.
 
-**Default model** — Model ID passed to `agy`. Run `agy models` to list the IDs your account can use. The dropdown offers `gemini-3.8-flash-high`, `gemini-3.8-flash-medium`, `gemini-3.8-flash-low`, `gemini-3.7-flash-high`, `gemini-3.7-flash-medium`, `gemini-3.7-flash-low`, `gemini-3.6-flash-high`, `gemini-3.6-flash-medium`, `gemini-3.6-flash-low`, `gemini-3.1-pro-high`, `gemini-3.1-pro-low`, `claude-sonnet-4-6`, `claude-opus-4-6-thinking`, and `gpt-oss-120b-medium`.
+**Network proxy** — HTTP/HTTPS/SOCKS5 proxy address (e.g. `http://127.0.0.1:7897`) for outbound API requests. Loopback addresses (`127.0.0.1`, `localhost`) are automatically exempted so Obsidian <-> Hub daemon communication is never routed through the proxy.
+
+**Default model** — Model ID passed to `agy`. Run `agy models` to list the IDs your account can use. The dropdown offers `gemini-3.8-flash-high`, `gemini-3.8-flash-medium`, `gemini-3.8-flash-low`, `claude-sonnet-4-6`, `claude-opus-4-6-thinking`, and `gpt-oss-120b-medium`. Legacy 3.1/3.6/3.7 models are automatically migrated to `gemini-3.8-flash-high`.
 
 Reasoning intensity is part of the model ID itself. `agy` rejects a `--model` carrying an `-high` / `-medium` / `-low` suffix when `--effort` is also supplied ("conflicts with --effort"), so the plugin sets the level through the model choice alone and never passes `--effort`.
 

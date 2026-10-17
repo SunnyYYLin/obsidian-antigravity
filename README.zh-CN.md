@@ -79,9 +79,11 @@ npm run build
 
 **界面语言** —— 插件界面语言。可选自动（跟随 Obsidian）、English、简体中文、繁體中文。
 
-**Antigravity 可执行文件路径** —— `agy` 可执行文件的位置。留空时，插件会依次搜索 `~/.local/bin`、`/usr/local/bin`、`/usr/bin` 以及 `PATH`。**验证可执行文件** 按钮会运行 `agy --version` 以确认插件能够执行它。
+**Antigravity 可执行文件路径** —— `agy` 可执行文件的位置。留空时，插件会依次搜索 `~/.local/bin`、mise/asdf shims、`/usr/local/bin`、`/usr/bin` 以及 `PATH`。**验证可执行文件** 按钮会运行 `agy --version` 以确认插件能够执行它。
 
-**默认模型** —— 传递给 `agy` 的模型 ID。可运行 `agy models` 查看当前账号可用的 ID。下拉框中提供：`gemini-3.8-flash-high`、`gemini-3.8-flash-medium`、`gemini-3.8-flash-low`、`gemini-3.7-flash-high`、`gemini-3.7-flash-medium`、`gemini-3.7-flash-low`、`gemini-3.6-flash-high`、`gemini-3.6-flash-medium`、`gemini-3.6-flash-low`、`gemini-3.1-pro-high`、`gemini-3.1-pro-low`、`claude-sonnet-4-6`、`claude-opus-4-6-thinking`、`gpt-oss-120b-medium`。
+**网络代理地址** —— 请求大模型 API 时使用的 HTTP/HTTPS/SOCKS5 代理地址（例如 `http://127.0.0.1:7897`）。本地回环地址（`127.0.0.1`, `localhost`）会自动豁免，确保 Obsidian 与本地 Hub 守护进程的通信不经过外部代理。
+
+**默认模型** —— 传递给 `agy` 的模型 ID。可运行 `agy models` 查看当前账号可用的 ID。下拉框中提供：`gemini-3.8-flash-high`、`gemini-3.8-flash-medium`、`gemini-3.8-flash-low`、`claude-sonnet-4-6`、`claude-opus-4-6-thinking`、`gpt-oss-120b-medium`。旧版 3.1/3.6/3.7 模型配置会自动平滑迁移至 `gemini-3.8-flash-high`。
 
 推理强度本身已包含在模型 ID 中。当 `--model` 带有 `-high` / `-medium` / `-low` 后缀时，若同时传入 `--effort`，`agy` 会直接拒绝执行（报「conflicts with --effort」）。因此插件仅通过模型选择来设定强度，不再传递 `--effort`。
 

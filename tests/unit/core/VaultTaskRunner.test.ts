@@ -54,6 +54,7 @@ describe('VaultTaskRunner', () => {
     expect(spawnArgs).toContain('stream-json');
     expect(spawnArgs).not.toContain('--dangerously-skip-permissions');
     expect(spawnArgs).toContain('--app_data_dir=antigravity-obsidian');
+    expect(spawnArgs.some((arg: string) => arg.startsWith('--project=obsidian-'))).toBe(true);
 
     // Simulate stdout stream
     fakeChild.stdout.emit(
