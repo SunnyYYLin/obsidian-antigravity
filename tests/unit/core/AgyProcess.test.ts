@@ -22,6 +22,36 @@ describe('AgyProcess', () => {
 
       expect(env.CUSTOM_VAR).toBe('hello-antigravity');
     });
+
+    it('handles case-insensitive Path on Windows without wiping system directories', () => {
+      const origPlatform = process.platform;
+      try {
+        Object.defineProperty(process, 'platform', { value: 'win32' });
+        const windowsSystemPath = 'C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\WindowsPowerShell\\v1.0';
+        const env = AgyProcess.getEnrichedEnv({ Path: windowsSystemPath });
+
+        expect(env.Path).toContain('C:\\Windows\\system32');
+        expect(env.Path).toContain('WindowsPowerShell');
+        expect(env.PATH).toBe(env.Path);
+      } finally {
+        Object.defineProperty(process, 'platform', { value: origPlatform });
+      }
+    });
+
+    it('populates both PATH and Path on Windows for child process compatibility', () => {
+      const origPlatform = process.platform;
+      try {
+        Object.defineProperty(process, 'platform', { value: 'win32' });
+        const env = AgyProcess.getEnrichedEnv({ PATH: 'C:\\test\\bin' });
+
+        expect(env.PATH).toBeDefined();
+        expect(env.Path).toBeDefined();
+        expect(env.PATH).toBe(env.Path);
+        expect(env.PATH).toContain('C:\\test\\bin');
+      } finally {
+        Object.defineProperty(process, 'platform', { value: origPlatform });
+      }
+    });
   });
 
   describe('formatProxyEnv', () => {

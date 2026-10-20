@@ -78,9 +78,23 @@ export class AgyProcess {
       '/opt/homebrew/bin',
     ];
 
-    const currentPath = env.PATH || '';
+    // On Windows, environment variable keys are case-insensitive.
+    // In Node.js, spreading process.env ({ ...process.env }) creates a plain object
+    // where the key is typically 'Path' rather than 'PATH'. Reading only env.PATH
+    // results in undefined, wiping out the system PATH and breaking child execution.
+    const addPathKey = Object.keys(additionalEnv).find((k) => k.toLowerCase() === 'path');
+    const envPathKey = Object.keys(env).find((k) => k.toLowerCase() === 'path') || 'PATH';
+    const activeKey = addPathKey || envPathKey;
+    const currentPath = (addPathKey ? additionalEnv[addPathKey] : env[envPathKey]) || '';
+
     const newPaths = extraPaths.filter((p) => !currentPath.split(delimiter).includes(p));
-    env.PATH = [...newPaths, currentPath].filter(Boolean).join(delimiter);
+    const enrichedPath = [...newPaths, currentPath].filter(Boolean).join(delimiter);
+
+    env[activeKey] = enrichedPath;
+    if (process.platform === 'win32') {
+      env.PATH = enrichedPath;
+      env.Path = enrichedPath;
+    }
 
     return env;
   }
