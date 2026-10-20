@@ -52,6 +52,27 @@ describe('AgyProcess', () => {
         Object.defineProperty(process, 'platform', { value: origPlatform });
       }
     });
+
+    it('prefers an explicitly supplied path key over the inherited one', () => {
+      const origPlatform = process.platform;
+      try {
+        Object.defineProperty(process, 'platform', { value: 'win32' });
+        Object.defineProperty(process.env, 'Path', {
+          value: 'C:\\Inherited',
+          configurable: true,
+          writable: true,
+        });
+
+        const env = AgyProcess.getEnrichedEnv({ PATH: 'C:\\Explicit' });
+
+        expect(env.PATH).toContain('C:\\Explicit');
+        expect(env.PATH).not.toContain('C:\\Inherited');
+        expect(env.Path).toBe(env.PATH);
+      } finally {
+        delete process.env.Path;
+        Object.defineProperty(process, 'platform', { value: origPlatform });
+      }
+    });
   });
 
   describe('formatProxyEnv', () => {
